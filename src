@@ -1,0 +1,249 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <Windows.h>
+#include <time.h>
+using namespace std;
+
+/*
+struct data
+{
+	0 string Year;
+	1 string Month;
+	2 string DayOfMonth;
+	3 string DayOfWeak;
+	4 string DepTime;
+	5 string CRSdepTime;
+	6 string ArrTime;
+	7 string CRSArrTime;
+	8 string UniqueCarrier;
+	9 string FlightNum;
+	10 string TailNum;
+	11 string ActualElapsedTime;
+	12 string CRSElapsedTime;
+	13 string AirTime;
+	14 string ArrDelay;
+	15 string DepDelay;
+	16 string Origin;
+	17 string Dest;
+	18 string Distance;
+	19 string TaxiIn;
+	20 string TaxiOut;
+	21 string Cancelled;
+	22 string CancellationCode;
+	23 string Diverted;
+	24 string CarrierDelay;
+	25 string WeatherDelay;
+	26 string	NASDelay;
+	27 string SecurityDelay;
+	28 string LateAircraftDelay;
+};*/
+
+BOOL FileRead(PCTSTR pszPathName, vector<char*>& airlineData);
+void myOut(char* str);
+void divide_substr(string s, vector<char*>& vec);
+void divide(string s);
+int main()
+{
+	/*
+	clock_t start, finish;
+	double totaltime;
+	start = clock();
+	vector<char*> airlineData;
+	FileRead(L"2008.csv", airlineData);
+	finish = clock();
+
+	totaltime = (finish - start) / CLOCKS_PER_SEC;
+	cout << totaltime << endl;
+	*/
+	
+	clock_t start, finish;
+	double totaltime;
+	start = clock();
+	ifstream in("2008.csv");
+	string line;
+	int count = 0;
+	while (getline(in, line))
+	{
+		count++;
+		cout << count << endl;
+	}
+	finish = clock();
+	totaltime = (finish - start) / CLOCKS_PER_SEC;
+	cout << totaltime << endl;
+	/*
+	vector<char*> data;
+	char* str = new char;
+	str = new char[4];
+	str[0] = 'a';
+	str[1] = 'b';
+	str[2] = 'c';
+	str[3] = '\0';
+	data.push_back(str);
+	str = new char[4];
+	str[0] = 'd';
+	str[1] = 'e';
+	str[2] = 'f';
+	str[3] = '\0';
+	data.push_back(str);
+	str = new char[4];
+	str[0] = 'g';
+	str[1] = 'h';
+	str[2] = 'i';
+	str[3] = '\0';
+	data.push_back(str);
+	str = new char[4];
+	str[0] = 'j';
+	str[1] = 'k';
+	str[2] = 'l';
+	str[3] = '\0';
+	data.push_back(str);
+	for (auto str : data)
+	{
+		cout << str << endl;
+	}*/
+	
+
+	/*
+	char * str = new char;
+	char * first = str;
+	*(str++) = 'a';
+	*str = '$';
+	
+	*(str++) = 'b';
+	*str = '$';
+
+	while (*first != '$')
+		cout << *(first++);
+	
+	char * second = str;
+	*str++ = 'c';
+	*str = '$';
+
+	*str++ = 'd';
+	*str = '$';
+
+	while (*second != '$')
+		cout << *(second++);
+	cout << endl;
+	*/
+}
+void myOut(char* str)
+{
+	while (*str != '$')
+		cout << *(str++);
+}
+
+void divide_substr(string s, vector<vector<string>>& vec)
+{
+	vector<string> temp;
+	int i = 1;
+	while (true)
+	{
+		temp.push_back(s.substr(0, s.find_first_of(',')));
+		if (s.find_first_of(',') > s.length())
+			break;
+		s = s.substr(s.find_first_of(',') + 1, s.length() - s.find_first_of(','));
+		i++;
+	}
+	vec.push_back(temp);
+}
+
+void divide(string s)
+{
+	int i = 1;
+	int point_begin = 0;
+	int point_end = 0;
+	while (true)
+	{
+		point_end = s.find_first_of(',', point_begin) + 1;
+		if (point_end < point_begin)
+		{
+			cout << i << ": ";
+			cout << s.substr(point_begin, point_end - point_begin - 2) << "\n";
+			break;
+		}
+		cout << i << ": ";
+		cout << s.substr(point_begin, point_end - point_begin - 1) << "\n";
+		point_begin = point_end;
+		i++;
+	}
+}
+
+BOOL FileRead(PCTSTR pszPathName, vector<char*>& airlineData)
+{
+	HANDLE hFile = CreateFile(pszPathName, GENERIC_WRITE | GENERIC_READ, 0, NULL
+		, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		printf("File could not be opened.");
+		return FALSE;
+	}
+
+	DWORD dwFileSize = GetFileSize(hFile, NULL);
+
+	HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
+		dwFileSize + sizeof(char), NULL);
+
+	if (hFileMap == NULL){
+		CloseHandle(hFile);
+		cout << "1111";
+		return FALSE;
+	}
+
+	PVOID pvFile = MapViewOfFile(hFileMap, FILE_MAP_WRITE, 0, 0, 0);
+
+	if (pvFile == NULL){
+		CloseHandle(hFileMap);
+		CloseHandle(hFile);
+		cout << "2222";
+		return FALSE;
+	}
+
+	PSTR pchAnsi = (PSTR)pvFile;
+	char * str = new char;
+	int commaCount = 0;	
+	while (*pchAnsi != NULL){
+		/*
+		if (*pchAnsi == 0x0A)         //换行       pushback(vecTemp)
+		{
+			commaCount = 0;
+			airlineData.push_back(str);
+		}
+		else
+		{
+			if (*pchAnsi == 0x2C)     //遇到 ‘，’pushback(strTemp)
+			{
+				commaCount++;
+			}
+			else if (commaCount == 10)              //可设置提取那一列数据
+			{
+				
+				int count = 0;
+				while (*pchAnsi != 0x2C)
+				{
+					count++;
+					pchAnsi++;
+				}
+				pchAnsi -= count;
+				str = new char[count+1];
+				str[count + 1] = '\0';
+				for (int i = 0; i < count; i++)
+				{
+					str[i] = *pchAnsi++;
+				}
+				pchAnsi--;
+			}
+		}*/
+		pchAnsi++;
+	}
+	UnmapViewOfFile(pvFile);
+	CloseHandle(hFileMap);
+
+	SetFilePointer(hFile, dwFileSize, NULL, FILE_BEGIN);
+	SetEndOfFile(hFile);//实际上不需要写入了。
+	CloseHandle(hFile);
+	cout << endl << "文件操作完成！" <<endl;
+	return TRUE;
+}
